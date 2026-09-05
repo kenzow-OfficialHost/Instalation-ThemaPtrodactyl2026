@@ -4,8 +4,8 @@ Installer menu-driven untuk tema **Stellar** dan **Enigma** di [Pterodactyl Pane
 
 ## Kredit
 
-- **Desain tema Stellar:** RiiSTORE (ditemukan dari data default di kode aslinya).
-- **Desain tema Enigma:** berasal dari tema "Enigma Premium" — ditemukan indikasi ini juga awalnya tema berbayar yang bocor/di-reupload (ada watermark ID pembeli tertanam di file asli, sudah dibuang dari paket ini).
+- **Desain tema Stellar:** $ Kenxzo
+- **Desain tema Enigma:** berasal dari tema "Enigma Premium" — ditemukan indikasi ini juga awalnya tema berbayar yang bocor/di-reupload.
 - **Fix kompatibilitas (Node 22 / Webpack 5 / Pterodactyl 1.15.x), installer menu, branding & dokumentasi:** Kenxzo Official.
 
 > Repo ini bukan klaim kepemilikan atas desain aslinya — ini hasil porting/fix agar tema-tema lama tetap bisa dipakai di panel versi baru, dikemas ulang jadi satu installer yang rapi.
@@ -29,7 +29,7 @@ Installer menu-driven untuk tema **Stellar** dan **Enigma** di [Pterodactyl Pane
 > (kalau path-nya beda, edit variabel `PANEL_DIR` di `install.sh` dulu sebelum run).
 
 ```bash
-git clone <url-repo-kamu> pterodactyl-theme-installer
+git clone https://github.com/kenzow-OfficialHost/Instalation-ThemaPtrodactyl2026.git
 cd pterodactyl-theme-installer
 sudo bash install.sh
 ```
