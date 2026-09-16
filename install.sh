@@ -32,7 +32,10 @@ require_panel() {
 ensure_pristine_backup() {
   if [ ! -d "$PRISTINE_DIR" ]; then
     banner "Membuat backup pristine (hanya sekali, dipakai untuk ganti/uninstall tema nanti)"
-    cp -r "$PANEL_DIR" "$PRISTINE_DIR"
+    # -a (archive) wajib: preserve ownership/permission asli (mis. storage/
+    # yg harusnya www-data). Kalau backup ini sendiri udah salah ownership,
+    # restore_pristine() bakal ikut nyalin ownership yg salah juga.
+    cp -a "$PANEL_DIR" "$PRISTINE_DIR"
     echo "[+] Backup pristine tersimpan di $PRISTINE_DIR"
   else
     echo "[+] Backup pristine sudah ada di $PRISTINE_DIR, skip."
@@ -47,8 +50,17 @@ restore_pristine() {
     exit 1
   fi
   rm -rf "$PANEL_DIR"
-  cp -r "$PRISTINE_DIR" "$PANEL_DIR"
+  # -a (archive) wajib: cp -r biasa jalan sebagai root bikin SEMUA file
+  # hasil copy jadi owner root:root, padahal storage/ & bootstrap/cache/
+  # butuh ditulis www-data. Tanpa ini, panel selalu 500 abis restore.
+  cp -a "$PRISTINE_DIR" "$PANEL_DIR"
   echo "[+] Panel sudah dikembalikan ke kondisi pristine."
+}
+
+fix_storage_permissions() {
+  echo "[+] Pastikan ownership storage/ & bootstrap/cache/ benar (www-data)"
+  chown -R www-data:www-data "$PANEL_DIR/storage" "$PANEL_DIR/bootstrap/cache"
+  chmod -R 755 "$PANEL_DIR/storage" "$PANEL_DIR/bootstrap/cache"
 }
 
 ensure_node22() {
@@ -69,9 +81,22 @@ ensure_node22() {
 
 patch_webpack_fallback() {
   cd "$PANEL_DIR"
-  if [ -f webpack.config.js ] && ! grep -q "path-browserify" webpack.config.js; then
+  [ -f webpack.config.js ] || return 0
+
+  # path-browserify (dipakai Stellar & Enigma)
+  if ! grep -q "path-browserify" webpack.config.js; then
     echo "[+] Patch webpack.config.js untuk polyfill 'path' (fix Webpack 5)"
     sed -i "s/symlinks: false,/fallback: {\n            path: require.resolve('path-browserify'),\n        },\n        symlinks: false,/" webpack.config.js
+  fi
+
+  # crypto/vm/buffer/process + fix resolusi ESM 'process/browser'.
+  # Dibutuhkan Enigma (Avatar.tsx pakai 'crypto' utk hash gravatar,
+  # yg menarik vm-browserify; framer-motion/axios/pathe versi ESM
+  # butuh module.rules fullySpecified:false). Aman dijalankan berkali-kali
+  # (idempotent) dan aman juga kalau tema lain gak butuh ini sama sekali.
+  if ! grep -q "crypto-browserify" webpack.config.js; then
+    echo "[+] Patch webpack.config.js untuk polyfill 'crypto'/'vm'/'process' (fix Webpack 5)"
+    node "$SCRIPT_DIR/scripts/patch-webpack-polyfills.js" webpack.config.js
   fi
 }
 
@@ -79,8 +104,9 @@ build_and_finish() {
   cd "$PANEL_DIR"
   echo "[+] Build frontend production (bisa makan waktu beberapa menit)"
   yarn build:production
+  fix_storage_permissions
   echo "[+] Bersihkan cache view"
-  php artisan view:clear
+  php artisan optimize:clear
 }
 
 # ------------------------------------------------------------
@@ -139,7 +165,7 @@ install_enigma() {
   ensure_node22
   cd "$PANEL_DIR"
   echo "[+] Install dependency tema"
-  yarn add path-browserify
+  yarn add path-browserify crypto-browserify stream-browserify vm-browserify buffer process
   patch_webpack_fallback
 
   build_and_finish
