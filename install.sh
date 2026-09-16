@@ -54,6 +54,13 @@ restore_pristine() {
   # hasil copy jadi owner root:root, padahal storage/ & bootstrap/cache/
   # butuh ditulis www-data. Tanpa ini, panel selalu 500 abis restore.
   cp -a "$PRISTINE_DIR" "$PANEL_DIR"
+  # Fix ownership LANGSUNG di sini, jangan tunda sampai build selesai.
+  # Kalau build gagal di step manapun setelah ini (mis. yarn/webpack error),
+  # 'set -e' bikin script berhenti sebelum sempat chown — panel bakal
+  # ke-500 walau backup pristine-nya sendiri masih ownership lama/salah
+  # (dari sebelum fix ini ada). Dipanggil lagi di build_and_finish sebagai
+  # jaring pengaman kedua, aman & murah dijalankan berkali-kali.
+  fix_storage_permissions
   echo "[+] Panel sudah dikembalikan ke kondisi pristine."
 }
 
@@ -102,6 +109,13 @@ patch_webpack_fallback() {
 
 build_and_finish() {
   cd "$PANEL_DIR"
+  # WAJIB: jangan asumsikan node_modules hasil restore pristine itu utuh/bisa
+  # dipakai build. Kalau pristine backup direkam SEBELUM Node.js 22 terpasang
+  # (kejadian di percobaan pertama), node_modules di dalamnya bisa rusak/gak
+  # lengkap (mis. binary 'cross-env' hilang) walau ada di package.json.
+  # yarn install di sini aman & cepat kalau lockfile gak berubah (cache).
+  echo "[+] Pastikan node_modules lengkap & sesuai Node.js aktif"
+  yarn install
   echo "[+] Build frontend production (bisa makan waktu beberapa menit)"
   yarn build:production
   fix_storage_permissions
