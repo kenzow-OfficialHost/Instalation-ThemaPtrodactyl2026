@@ -13,6 +13,7 @@ Installer menu-driven untuk tema **Stellar** dan **Enigma** di [Pterodactyl Pane
 ## Screenshot
 
 ![Dashboard working](screenshots/dashboard-working.png)
+![Dashboard Server](screenshots/Screenshot from 2026-09-16 15-06-51.png)
 
 ## Requirement
 
