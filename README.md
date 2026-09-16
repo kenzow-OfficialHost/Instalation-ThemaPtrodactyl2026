@@ -30,7 +30,7 @@ Installer menu-driven untuk tema **Stellar** dan **Enigma** di [Pterodactyl Pane
 
 ```bash
 git clone https://github.com/kenzow-OfficialHost/Instalation-ThemaPtrodactyl2026.git
-cd pterodactyl-theme-installer
+cd Instalation-ThemaPtrodactyl2026
 sudo bash install.sh
 ```
 
