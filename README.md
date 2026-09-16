@@ -57,7 +57,7 @@ File `/root/.kenxzo-theme-state` menyimpan nama tema yang lagi aktif (buat ditam
 
 ## Troubleshooting
 
-Error di bawah ini adalah error nyata yang muncul saat proses debug — sudah ditangani otomatis oleh `install.sh`, dicatat di sini kalau perlu fix manual di kondisi lain.
+Error di bawah ini adalah error nyata yang muncul saat proses debug — **sudah ditangani otomatis oleh `install.sh`** (termasuk saat install tema Enigma), dicatat di sini kalau perlu fix manual di kondisi lain (misal server lama yang install-nya masih pakai versi script sebelum fix ini masuk).
 
 ### 1. `The engine "node" is incompatible with this module. Expected version ">=22"`
 
@@ -83,7 +83,32 @@ fallback: {
 },
 ```
 
-### 3. Logo di sidebar (Stellar) muncul ikon "gambar rusak"
+### 3. `Module not found: Error: Can't resolve 'crypto'` / `'vm'` / `'process/browser'` saat build tema Enigma
+
+**Penyebab:** sama kayak masalah `path` di atas, tapi lebih dalam — komponen `Avatar.tsx` di tema Enigma pakai modul `crypto` (buat hash Gravatar), yang menarik `vm-browserify`. Beberapa dependency modern (`framer-motion`, `axios`, `pathe`) juga pakai ESM strict resolution yang bentrok sama alias `process/browser`.
+
+**Fix manual** (kalau install dari versi script lama):
+```bash
+cd /var/www/pterodactyl
+yarn add crypto-browserify stream-browserify vm-browserify buffer process
+node /path/ke/repo-ini/scripts/patch-webpack-polyfills.js webpack.config.js
+yarn build:production
+```
+Versi installer saat ini sudah menjalankan ini otomatis lewat `patch_webpack_fallback()` di `install.sh`.
+
+### 4. 500 Internal Server Error setelah tema selesai ke-build
+
+**Penyebab:** proses restore ke kondisi "pristine" (dipakai tiap ganti/install tema) sempat bikin folder `storage/` & `bootstrap/cache/` ke-copy dengan owner `root`, padahal Laravel butuh akses tulis `www-data` ke situ untuk log, cache, dan session. Tanpa ini, panel selalu 500 tanpa pesan error yang jelas ke browser.
+
+**Fix manual:**
+```bash
+chown -R www-data:www-data /var/www/pterodactyl/storage /var/www/pterodactyl/bootstrap/cache
+chmod -R 755 /var/www/pterodactyl/storage /var/www/pterodactyl/bootstrap/cache
+php artisan optimize:clear
+```
+Versi installer saat ini sudah menjalankan ini otomatis lewat `fix_storage_permissions()` di `install.sh`, dan proses backup/restore pristine sekarang pakai `cp -a` (preserve ownership) supaya masalah ini tidak muncul lagi dari akarnya.
+
+### 5. Logo di sidebar (Stellar) muncul ikon "gambar rusak"
 
 **Penyebab:** URL logo di **Admin → Theme** diisi tanpa `https://` di depannya.
 
@@ -92,15 +117,15 @@ fallback: {
 https://img3.pixhost.to/images/5191/762221600_image.jpg
 ```
 
-### 4. `Class "Carbon" not found` saat `php artisan migrate` (Stellar)
+### 6. `Class "Carbon" not found` saat `php artisan migrate` (Stellar)
 
 **Status:** sudah diperbaiki permanen di paket ini (`use Carbon\Carbon;` sudah ditambahkan ke semua controller & migration terkait).
 
-### 5. Mau ganti tema tapi takut rusak
+### 7. Mau ganti tema tapi takut rusak
 
 Nggak perlu takut — tinggal jalankan `sudo bash install.sh` lagi, pilih tema lain. Installer otomatis restore ke pristine dulu sebelum overlay tema baru.
 
-### 6. Mau balikin panel ke kondisi tanpa tema sama sekali
+### 8. Mau balikin panel ke kondisi tanpa tema sama sekali
 
 ```bash
 sudo bash install.sh
