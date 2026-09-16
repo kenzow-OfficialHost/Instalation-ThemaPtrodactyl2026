@@ -20,7 +20,7 @@ Installer menu-driven untuk tema **Stellar** dan **Enigma** di [Pterodactyl Pane
 # 2. Enigma
 ![Dashboard Enigma](screenshots/EnigmaDashboard.png)
 # When It Comes To The Server Enigma Thema ->
-![Dashboard Enigma](screenshots/EnigmaDashboard.png)
+![Dashboard Enigma](screenshots/Enigma.png)
 
 ## Requirement
 
