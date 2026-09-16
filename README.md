@@ -10,9 +10,17 @@ Installer menu-driven untuk tema **Stellar** dan **Enigma** di [Pterodactyl Pane
 
 > Repo ini bukan klaim kepemilikan atas desain aslinya — ini hasil porting/fix agar tema-tema lama tetap bisa dipakai di panel versi baru, dikemas ulang jadi satu installer yang rapi.
 
-## Screenshot
+## Screenshot Stellar & Enigma
 
+# 1. Stellar
 ![Dashboard working](screenshots/dashboard-working.png)
+# When It Comes To The Server Stellar Thema ->
+![View Server](screenshots/ServerView.png)
+
+# 2. Enigma
+![Dashboard Enigma](screenshots/EnigmaDashboard.png)
+# When It Comes To The Server Enigma Thema ->
+![Dashboard Enigma](screenshots/Enigma.png)
 
 ## Requirement
 
